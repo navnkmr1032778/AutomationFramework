@@ -28,21 +28,6 @@ Local setup steps:
  iii) Once it completed, right click on the project module and select Maven -> Update Project
 
 
-Importing the Framework as a Jar for Automation development:
-----------------------------------------------------------
-
-1. Make sure your project falls under maven org.
-2. Add the following Maven dependency information in your pom.xml file 
-   [TODO : Update the link]
-3. Folder structure:
-   i) Create a folder resource parallel to src folder
-   ii) Create the following folders
-      a. resources -> testdata -- to hold the input files
-      b. resources -> drivers -- to hold browser executable files
-4. Extend AppTest class for all your test classes and AppPage class for all your page factory classes.
-
-
-
 Executing TestNG as a Java Program:
 -----------------------------------
 The following set-up helps to transform a TestNG xml file into a TestNG Java file. This is particularly useful when the tests need to be run as an executable JAR file in a machine without eclipse / maven installed.
