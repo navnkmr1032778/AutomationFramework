@@ -28,7 +28,7 @@ Local setup steps:
  iii) Once it completed, right click on the project module and select Maven -> Update Project
 
 
-Importing the swaftee as a Jar for Automation development:
+Importing the Framework as a Jar for Automation development:
 ----------------------------------------------------------
 
 1. Make sure your project falls under maven org.
