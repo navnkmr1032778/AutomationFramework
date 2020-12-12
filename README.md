@@ -6,7 +6,7 @@ A Web Driver based Automation Framework using selenium.
 Local setup steps:
 ------------------
 
-1. Make sure you have Java version 7 (JDK) or above installed in your machine.
+1. Make sure you have Java version 8 (JDK) or above installed in your machine.
 2. Download eclipse [https://eclipse.org/downloads/].
 3. Setup TestNG in eclipse [http://goo.gl/GleaWs].
 4. Clone the swaftee repo from here[https://github.com/navnkmr1032778/AutomationFramework.git].
