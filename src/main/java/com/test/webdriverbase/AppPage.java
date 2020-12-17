@@ -1,6 +1,9 @@
 package com.test.webdriverbase;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.openqa.selenium.By;
@@ -188,6 +191,193 @@ public class AppPage extends TestListenerAdapter {
 	public void closeWindow() {
 		this.driver.close();
 		sleep(500);
+	}
+
+	public boolean switchToNextWindow() {
+		boolean switchSuccess = false;
+		if (getWindowHandles().size() == 1) {
+			logger.info("One window present..Waiting for new window to open");
+			waitForNewWindow(1);
+		}
+		List<String> windows = new ArrayList<String>(getWindowHandles());
+		String currentWindow = getWindowHandle();
+		int count = windows.size();
+		for (int index = 0; index < count; index++) {
+			if (currentWindow.equals(windows.get(index))) {
+				if (index == count - 1) {
+					logger.info("switchToNextWindow() - Current window is last window..Switch not possible");
+					break;
+				}
+				switchSuccess = switchToNthWindow(index + 1);
+				break;
+			}
+		}
+		return switchSuccess;
+	}
+
+	public void waitForWindowToClose(String windowId) {
+		final String window = windowId;
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(driver)
+				.withTimeout(Duration.ofSeconds(WebDriverConstants.WAIT_TWO_MIN)).pollingEvery(Duration.ofSeconds(1))
+				.ignoring(NoSuchElementException.class);
+		wait.until(new ExpectedCondition<Boolean>() {
+			public Boolean apply(WebDriver driver) {
+				return !getWindowHandles().contains(window);
+			}
+		});
+		return;
+	}
+
+	public void waitForNewWindow(int winCount) {
+		final int count = winCount;
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(driver)
+				.withTimeout(Duration.ofSeconds(WebDriverConstants.WAIT_TWO_MIN)).pollingEvery(Duration.ofSeconds(1))
+				.ignoring(NoSuchElementException.class);
+		wait.until(new ExpectedCondition<Boolean>() {
+			public Boolean apply(WebDriver driver) {
+				return getWindowHandles().size() > count;
+			}
+		});
+		return;
+	}
+
+	public boolean switchToNextWindowClosingCurrent() {
+		boolean switchSuccess = false;
+		List<String> windows = new ArrayList<String>(getWindowHandles());
+		String currentWindow = getWindowHandle();
+		if (windows.size() == 1) {
+			return true;
+		}
+		for (int index = 0; index < windows.size(); index++) {
+			if (currentWindow.equals(windows.get(index))) {
+				this.driver.close();
+				// Pass index, since the next window's index would've reduced by 1
+				switchSuccess = switchToNthWindow(index);
+				break;
+			}
+		}
+		return switchSuccess;
+	}
+
+	public boolean switchToNextWindow(int currentHandleCount) {
+		boolean switchSuccess = false;
+		if (getWindowHandles().size() == currentHandleCount) {
+			logger.info("Waiting for new window to open");
+			waitForNewWindow(currentHandleCount);
+		}
+		List<String> windows = new ArrayList<String>(getWindowHandles());
+		String currentWindow = getWindowHandle();
+		int count = windows.size();
+		for (int index = 0; index < count; index++) {
+			if (currentWindow.equals(windows.get(index))) {
+				if (index == count - 1) {
+					logger.info("switchToNextWindow() - Current window is last window..Switch not possible");
+					break;
+				}
+				switchSuccess = switchToNthWindow(index + 1);
+				break;
+			}
+		}
+		return switchSuccess;
+	}
+
+	public boolean switchToPreviousWindow() {
+		return switchToPreviousWindowClosingCurrent(false);
+	}
+
+	public boolean switchToPreviousWindowClosingCurrent(boolean close) {
+		boolean switchSuccess = false;
+		List<String> windows = new ArrayList<String>(getWindowHandles());
+		String currentWindow = getWindowHandle();
+		for (int index = 0; index < windows.size(); index++) {
+			if (currentWindow.equals(windows.get(index))) {
+				if (close)
+					this.driver.close();
+				switchSuccess = switchToNthWindow(index - 1);
+				break;
+			}
+		}
+		return switchSuccess;
+	}
+
+	public boolean switchToLastWindowClosingOthers() {
+		List<String> windows = new ArrayList<String>(getWindowHandles());
+		return switchToNthWindowClosingOthers(windows.size(), true);
+	}
+
+	public void switchToWindowClosingCurrent(String windowHandle) {
+		this.driver.close();
+		switchToWindow(windowHandle);
+	}
+
+	/**
+	 * Switch to corresponding nth window and close other open windows if needed
+	 * 
+	 * @param n     - index of window to switch to(assuming 0 as start index)
+	 * @param close - True if other windows have to be closed
+	 * @return
+	 */
+	public boolean switchToNthWindowClosingOthers(int n, boolean close) {
+		boolean switchSuccess = false;
+		List<String> windows = new ArrayList<String>(getWindowHandles());
+		if (windows.size() >= n) {
+			if (close) {
+				for (int index = 0; index < windows.size(); index++) {
+					switchToWindow(windows.get(index));
+					if (index != n) {
+						this.driver.close();
+					}
+				}
+			}
+			switchToWindow(windows.get(n));
+			switchSuccess = true;
+		}
+		return switchSuccess;
+	}
+
+	public boolean switchToNthWindow(int n) {
+		return switchToNthWindowClosingOthers(n, false);
+	}
+
+	public void switchToWindow(String windowHandle) {
+		sleep(500);
+		this.driver.switchTo().window(windowHandle);
+	}
+
+	public boolean switchToWindowUsingTitle(String title) throws InterruptedException {
+		String curWindow = this.driver.getWindowHandle();
+		Set<String> windows = this.driver.getWindowHandles();
+		if (!windows.isEmpty()) {
+			for (String windowId : windows) {
+				if (this.driver.switchTo().window(windowId).getTitle().equals(title)) {
+					return true;
+				} else {
+					this.driver.switchTo().window(curWindow);
+				}
+			}
+		}
+		return false;
+	}
+
+	public Set<String> getWindowHandles() {
+		return this.driver.getWindowHandles();
+	}
+
+	public String getWindowHandle() {
+		return this.driver.getWindowHandle();
+
+	}
+
+	public void switchToWindowClosingOthers(String handle) {
+		List<String> windows = new ArrayList<String>(getWindowHandles());
+
+		for (String window : windows) {
+			this.driver.switchTo().window(window);
+			if (!window.equals(handle))
+				this.driver.close();
+		}
+
+		this.driver.switchTo().window(handle);
 	}
 
 	public WebElement waitForElementToAppear(By locator) {
